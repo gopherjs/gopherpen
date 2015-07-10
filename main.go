@@ -2,9 +2,11 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"html/template"
 	"log"
 	"net/http"
+	"strings"
 	"sync"
 
 	"github.com/shurcooL/go/gzip_file_server"
@@ -55,8 +57,17 @@ func main() {
 	http.HandleFunc("/", mainHandler)
 	http.Handle("/assets/", gzip_file_server.New(assets))
 
+	printServingAt(*httpFlag)
 	err = http.ListenAndServe(*httpFlag, nil)
 	if err != nil {
 		log.Fatalln("ListenAndServe:", err)
 	}
+}
+
+func printServingAt(addr string) {
+	hostPort := addr
+	if strings.HasPrefix(hostPort, ":") {
+		hostPort = "localhost" + hostPort
+	}
+	fmt.Printf("serving at http://%s/\n", hostPort)
 }
