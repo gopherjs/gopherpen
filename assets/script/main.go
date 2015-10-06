@@ -2,6 +2,8 @@
 
 package main
 
+import "fmt"
+
 func main() {
-	println("Script is working!")
+	fmt.Println("Script is working! Try making some changes to it.")
 }

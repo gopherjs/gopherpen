@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http"
 	"strings"
-	"sync"
 
 	"github.com/shurcooL/go/gzip_file_server"
 	"github.com/shurcooL/httpfs/html/vfstemplate"
@@ -24,20 +23,22 @@ func loadTemplates() error {
 	return err
 }
 
-var state struct {
-	mu sync.Mutex
-}
-
 func mainHandler(w http.ResponseWriter, req *http.Request) {
-	if err := loadTemplates(); err != nil {
-		log.Println("loadTemplates:", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+	if !production {
+		if err := loadTemplates(); err != nil {
+			log.Println("loadTemplates:", err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 
-	state.mu.Lock()
-	err := t.ExecuteTemplate(w, "index.html.tmpl", &state)
-	state.mu.Unlock()
+	var data = struct {
+		Animals string
+	}{
+		Animals: "gophers",
+	}
+
+	err := t.ExecuteTemplate(w, "index.html.tmpl", data)
 	if err != nil {
 		log.Println("t.Execute:", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -48,17 +49,19 @@ func mainHandler(w http.ResponseWriter, req *http.Request) {
 func main() {
 	flag.Parse()
 
-	err := loadTemplates()
-	if err != nil {
-		log.Fatalln("loadTemplates:", err)
+	if production {
+		err := loadTemplates()
+		if err != nil {
+			log.Fatalln("loadTemplates:", err)
+		}
 	}
 
-	http.Handle("/favicon.ico", http.NotFoundHandler())
 	http.HandleFunc("/", mainHandler)
 	http.Handle("/assets/", gzip_file_server.New(assets))
+	http.Handle("/favicon.ico", http.NotFoundHandler())
 
 	printServingAt(*httpFlag)
-	err = http.ListenAndServe(*httpFlag, nil)
+	err := http.ListenAndServe(*httpFlag, nil)
 	if err != nil {
 		log.Fatalln("ListenAndServe:", err)
 	}
