@@ -14,22 +14,18 @@ import (
 
 var httpFlag = flag.String("http", ":8080", "Listen for HTTP connections on this address.")
 
-var t *template.Template
-
-func loadTemplates() error {
-	var err error
-	t = template.New("").Funcs(template.FuncMap{})
-	t, err = vfstemplate.ParseGlob(assets, t, "/assets/*.tmpl")
-	return err
+func loadTemplates() (*template.Template, error) {
+	t := template.New("").Funcs(template.FuncMap{})
+	t, err := vfstemplate.ParseGlob(assets, t, "/assets/*.tmpl")
+	return t, err
 }
 
 func mainHandler(w http.ResponseWriter, req *http.Request) {
-	if !production {
-		if err := loadTemplates(); err != nil {
-			log.Println("loadTemplates:", err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+	t, err := loadTemplates()
+	if err != nil {
+		log.Println("loadTemplates:", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	var data = struct {
@@ -38,7 +34,7 @@ func mainHandler(w http.ResponseWriter, req *http.Request) {
 		Animals: "gophers",
 	}
 
-	err := t.ExecuteTemplate(w, "index.html.tmpl", data)
+	err = t.ExecuteTemplate(w, "index.html.tmpl", data)
 	if err != nil {
 		log.Println("t.Execute:", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -48,13 +44,6 @@ func mainHandler(w http.ResponseWriter, req *http.Request) {
 
 func main() {
 	flag.Parse()
-
-	if production {
-		err := loadTemplates()
-		if err != nil {
-			log.Fatalln("loadTemplates:", err)
-		}
-	}
 
 	http.HandleFunc("/", mainHandler)
 	http.Handle("/assets/", gzip_file_server.New(assets))
