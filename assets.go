@@ -9,8 +9,6 @@ import (
 	"github.com/shurcooL/go/vfs/httpfs/union"
 )
 
-const production = false
-
 var assets = union.New(map[string]http.FileSystem{
 	"/assets": gopherjs_http.NewFS(http.Dir("assets")),
 })
