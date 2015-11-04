@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/shurcooL/go/gopherjs_http"
-	"github.com/shurcooL/go/vfs/httpfs/union"
+	"github.com/shurcooL/httpfs/union"
 )
 
 var assets = union.New(map[string]http.FileSystem{
