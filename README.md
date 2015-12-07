@@ -1,4 +1,4 @@
-# Gopherpen
+# gopherpen [![Build Status](https://travis-ci.org/gopherjs/gopherpen.svg?branch=master)](https://travis-ci.org/gopherjs/gopherpen) [![GoDoc](https://godoc.org/github.com/gopherjs/gopherpen?status.svg)](https://godoc.org/github.com/gopherjs/gopherpen)
 
 Gopherpen is a project template that will let you easily get started with GopherJS
 for building a web app. It includes some simple HTML, CSS, and Go code for the frontend.
